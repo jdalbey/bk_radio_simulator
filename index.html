@@ -750,7 +750,8 @@ button.func {
 
   /* circular drag + wheel on VOL knob */
   const volSvg = volInd.closest('svg');
-  makeDraggable(volSvg, ()=>volIdx, i=>{ volIdx=i; }, VOL_STEPS-1, setVolAngle);
+  let volDragged = false;
+  makeDraggable(volSvg, ()=>volIdx, i=>{ volIdx=i; }, VOL_STEPS-1, (a)=>{ volDragged=true; setVolAngle(a); });
   volSvg.addEventListener('wheel', e=>{
     e.preventDefault();
     volIdx = e.deltaY < 0 ? Math.min(VOL_STEPS-1, volIdx+1) : Math.max(0, volIdx-1);
@@ -874,7 +875,7 @@ button.func {
     chanCells.forEach(cell=>{ cell.textContent='\u00a0'; });
   }
 
-  volSvg.addEventListener('click', ()=>{ powered ? powerOff() : powerOn(); });
+  volSvg.addEventListener('click', ()=>{ if(volDragged){ volDragged=false; return; } powered ? powerOff() : powerOn(); });
 })();
 </script>
 </body>
