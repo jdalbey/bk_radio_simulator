@@ -269,7 +269,8 @@ body{
   letter-spacing:1px;
 }
 
-svg.knob-svg{ display:block; }
+svg.knob-svg{ display:block; cursor:grab; }
+svg.knob-svg:active{ cursor:grabbing; }
 
 /* vol slider */
 input[type=range].vol-slider{
@@ -551,10 +552,61 @@ input[type=range].vol-slider::-moz-range-thumb{
   /* Channel name table — 8 chars each, space-padded */
   const CH_NAMES = [
     'SQF CH1 ', 'SQF CH2 ', 'SQF CH3 ', 'SQF CH4 ',
-    'SQF CH5 ', 'SQF CH6 ', 'SQF CH7 ', 'SQF CH8 ',
-    'SQF CH9 ', 'SQF CH10', 'SQF CH11', 'SQF CH12',
-    'SQF CH13', 'SQF CH14', 'SQF CH15', 'SQF CH16'
+    'SQF CH5 ', 'KNP CMD2', 'ICS RPT2', 'SNF CH2 ',
+    'SNF CH4 ', 'FS COM  ', 'R-5 PROJ', 'FS AG 41',
+    'FS AG 24', 'NIFC T-2', 'R5 T-4  ', 'R5 T-5  '
   ];
+
+  /*
+   * makeDraggable — circular/rotary drag for a knob SVG.
+   * The user grabs anywhere on the knob and moves the mouse (or finger) in
+   * an arc; the angle from the knob's centre to the pointer is tracked and
+   * deltas are accumulated.  Every DEG_PER_STEP degrees of arc advances one
+   * discrete step.  Works with mouse and touch.
+   */
+  function makeDraggable(svgEl, getIdx, setIdx, maxIdx, onUpdate){
+    const DEG_PER_STEP = 18; // degrees of rotation per one detent step
+    let active = false, lastAngle = 0, surplus = 0;
+
+    function ptrAngle(e){
+      const r = svgEl.getBoundingClientRect();
+      const {clientX, clientY} = e.touches ? e.touches[0] : e;
+      return Math.atan2(clientY - (r.top + r.height / 2),
+                        clientX - (r.left + r.width  / 2)) * (180 / Math.PI);
+    }
+
+    function start(e){
+      active = true;
+      lastAngle = ptrAngle(e);
+      surplus = 0;
+      e.preventDefault();
+    }
+
+    function move(e){
+      if(!active) return;
+      let delta = ptrAngle(e) - lastAngle;
+      lastAngle = ptrAngle(e);
+      if(delta >  180) delta -= 360; // handle ±180° wrap
+      if(delta < -180) delta += 360;
+      surplus += delta;
+      const steps = Math.trunc(surplus / DEG_PER_STEP);
+      if(steps){
+        surplus -= steps * DEG_PER_STEP;
+        setIdx(Math.max(0, Math.min(maxIdx, getIdx() + steps)));
+        onUpdate(true);
+      }
+      e.preventDefault();
+    }
+
+    function end(){ active = false; }
+
+    svgEl.addEventListener('mousedown',  start);
+    svgEl.addEventListener('touchstart', start, {passive:false});
+    window.addEventListener('mousemove',  move);
+    window.addEventListener('touchmove',  move, {passive:false});
+    window.addEventListener('mouseup',   end);
+    window.addEventListener('touchend',  end);
+  }
 
   /* Speaker grille slots */
   const rightSec = document.getElementById('rightSection');
@@ -578,6 +630,16 @@ input[type=range].vol-slider::-moz-range-thumb{
   }
 
   volSlider.addEventListener('input', ()=>{ volIdx = +volSlider.value; setVolAngle(true); });
+
+  /* circular drag + wheel on VOL knob */
+  const volSvg = volInd.closest('svg');
+  makeDraggable(volSvg, ()=>volIdx, i=>{ volIdx=i; }, VOL_STEPS-1, setVolAngle);
+  volSvg.addEventListener('wheel', e=>{
+    e.preventDefault();
+    volIdx = e.deltaY < 0 ? Math.min(VOL_STEPS-1, volIdx+1) : Math.max(0, volIdx-1);
+    setVolAngle(true);
+  }, {passive:false});
+
   volInd.setAttribute('transform', `translate(100,100) rotate(${MIN_A})`);
   volInd.style.transform = '';
   setVolAngle(false);
@@ -600,10 +662,12 @@ input[type=range].vol-slider::-moz-range-thumb{
   chLeft.addEventListener('click',  ()=>{ chIdx = Math.max(0, chIdx - 1);            setChAngle(true); });
   chRight.addEventListener('click', ()=>{ chIdx = Math.min(CH_STEPS - 1, chIdx + 1); setChAngle(true); });
 
-  /* mouse wheel on CH knob */
-  chInd.closest('svg').addEventListener('wheel', e=>{
+  /* circular drag + wheel on CH knob */
+  const chSvg = chInd.closest('svg');
+  makeDraggable(chSvg, ()=>chIdx, i=>{ chIdx=i; }, CH_STEPS-1, setChAngle);
+  chSvg.addEventListener('wheel', e=>{
     e.preventDefault();
-    chIdx = e.deltaY > 0 ? Math.min(CH_STEPS - 1, chIdx + 1) : Math.max(0, chIdx - 1);
+    chIdx = e.deltaY < 0 ? Math.min(CH_STEPS-1, chIdx+1) : Math.max(0, chIdx-1);
     setChAngle(true);
   }, {passive:false});
 
