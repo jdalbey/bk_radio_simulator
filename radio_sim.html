@@ -17,6 +17,7 @@
 body{
   background:#8f8e8e;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   min-height:100vh;
@@ -141,9 +142,14 @@ body{
 
 .led-name{
   font-size:14px;
-  /*color:#555;*/color:#00d4bc;
+  /*color:#555;*/color:#4e6462;
   font-family:monospace;
   letter-spacing:0.5px;
+  transition:color 0.15s, text-shadow 0.15s;
+}
+.led-name.on{
+  color:#00ffee;
+  text-shadow:0 0 6px #00d4bc, 0 0 14px rgba(0,212,188,0.5);
 }
 
 .led-pip{
@@ -395,6 +401,69 @@ input[type=range].vol-slider::-moz-range-thumb{
 .panel:not(.powered) .led-name { visibility:hidden; }
 .panel:not(.powered) .led-pip  { visibility:hidden; }
 .panel:not(.powered) .chan-cell { visibility:hidden; }
+
+/* ── Handset ── */
+.handset {
+  width: 260px;
+  margin: 0;
+  padding: 20px 15px 30px;
+  background: linear-gradient(#444, #222);
+  border-radius: 40px;
+  box-shadow: inset 0 2px 6px rgba(255,255,255,0.2),
+              0 8px 20px rgba(0,0,0,0.4);
+}
+.mic_slot {
+  width: 60px;
+  height: 10px;
+  margin: 0 auto 15px;
+  background: #111;
+  border-radius: 6px;
+}
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+button.key {
+  height: 45px;
+  border-radius: 10px;
+  border: none;
+  background: #666;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px #222;
+}
+button.key:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px #111;
+}
+button.func {
+  background: #555;
+  font-size: 16px;
+}
+.handset-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: fit-content;
+  margin: 40px auto;
+  padding: 20px;
+  background: linear-gradient(#3a3a3a, #2a2a2a);
+  border: 2px solid #555;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+.ptt_btn {
+  margin-top: 45px;
+  margin-right: 10px;
+}
+.ptt_btn .key {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
 </head>
 <body>
@@ -414,7 +483,7 @@ input[type=range].vol-slider::-moz-range-thumb{
           <div class="led-item"><div class="led-name">PR</div></div>
           <div class="led-item"><div class="led-name">TX</div></div>
           <div class="led-item"><div class="led-name">RX</div></div>
-          <div class="led-item"><div class="led-name">SCN</div></div>
+          <div class="led-item"><div class="led-name" id="led-SCN">SCN</div></div>
           <div class="led-item"><div class="led-name">ID</div></div>
           <div class="led-item"><div class="led-name">CG</div></div>
           <div class="led-item"><div class="led-name">TEL</div></div>
@@ -548,6 +617,33 @@ input[type=range].vol-slider::-moz-range-thumb{
 
 </div><!-- /panel -->
 
+<div class="handset-wrapper">
+  <div class="ptt_btn">
+    <button class="key func">&nbsp;PTT&nbsp;</button>
+  </div>
+  <div class="handset" id="handset">
+    <div class="mic_slot"></div>
+    <div class="keypad">
+      <button class="key">1</button>
+      <button class="key">2</button>
+      <button class="key">3</button>
+      <button class="key func">FCN</button>
+      <button class="key">4</button>
+      <button class="key">5</button>
+      <button class="key">6</button>
+      <button class="key func">PRI</button>
+      <button class="key">7</button>
+      <button class="key">8</button>
+      <button class="key">9</button>
+      <button class="key func">ENT</button>
+      <button class="key">*</button>
+      <button class="key">0</button>
+      <button class="key">#</button>
+      <button class="key func">CLR</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   const MIN_A = -135, MAX_A = 135;
@@ -561,6 +657,20 @@ input[type=range].vol-slider::-moz-range-thumb{
     'SNF CH4 ', 'FS COM  ', 'R-5 PROJ', 'FS AG 41',
     'FS AG 24', 'NIFC T-2', 'R5 T-4  ', 'R5 T-5  '
   ];
+
+  /* Startup scan list of channels to listen for traffic */
+  let scan_list = ['SQF CH3','SQF CH4','R-5 PROJ','FS AG 41'];
+
+  const scnBtn = document.getElementById('btn-SCN');
+  const scnLed = document.getElementById('led-SCN');
+
+  function updateScnLed() {
+    if (!scnBtn.classList.contains('active')) {
+      scnLed.classList.toggle('on', scan_list.includes(CH_NAMES[chIdx].trim()));
+    } else {
+      scnLed.classList.remove('on');
+    }
+  }
 
   /*
    * makeDraggable — circular/rotary drag for a knob SVG.
@@ -613,7 +723,7 @@ input[type=range].vol-slider::-moz-range-thumb{
     window.addEventListener('touchend',  end);
   }
 
-  /* Speaker grille slots */
+  /* Draw speaker grille slots */
   const rightSec = document.getElementById('rightSection');
   const brandBar = rightSec.querySelector('.brand-bar');
   for(let i=0; i<20; i++){
@@ -662,6 +772,7 @@ input[type=range].vol-slider::-moz-range-thumb{
     chInd.style.transform  = `translate(100px,100px) rotate(${a}deg)`;
     const name = CH_NAMES[chIdx];
     chanCells.forEach((cell, i) => { cell.textContent = name[i] ?? '\u00a0'; });
+    updateScnLed();
   }
 
   chLeft.addEventListener('click',  ()=>{ chIdx = Math.max(0, chIdx - 1);            setChAngle(true); });
@@ -689,9 +800,49 @@ input[type=range].vol-slider::-moz-range-thumb{
     });
   });
 
-  /* ── TX transmit indicator (illuminated by mic PTT — toggled here for testing) ── */
-  document.getElementById('txIndicator').addEventListener('click', function(){
-    this.classList.toggle('on');
+  scnBtn.addEventListener('click', updateScnLed);
+
+  /* ── TX transmit indicator — driven by handset PTT hold ── */
+  const txIndicator = document.getElementById('txIndicator');
+  const pttBtn = document.querySelector('.ptt_btn .key');
+  pttBtn.addEventListener('mousedown', () => { emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); } });
+  pttBtn.addEventListener('mouseup',   () => txIndicator.classList.remove('on'));
+  pttBtn.addEventListener('mouseleave',() => txIndicator.classList.remove('on'));
+
+  /* ── Handset keypad ── */
+  const handset = document.getElementById('handset');
+  function emitKey(key) {
+    handset.dispatchEvent(new CustomEvent('radio-key', { detail: { key } }));
+    console.log('Key pressed:', key);
+  }
+  document.querySelectorAll('.keypad .key').forEach(btn => {
+    btn.addEventListener('click', () => emitKey(btn.textContent.trim()));
+  });
+  document.addEventListener('keydown', (e) => {
+    let key = null;
+    if (e.key >= '0' && e.key <= '9') key = e.key;
+    else if (e.key === '*') key = '*';
+    else if (e.key === '#') key = '#';
+    if (key) {
+      emitKey(key);
+      const btn = [...document.querySelectorAll('.keypad .key')]
+        .find(b => b.textContent.trim() === key);
+      if (btn) {
+        btn.classList.add('active');
+        setTimeout(() => btn.classList.remove('active'), 100);
+      }
+    }
+  });
+  handset.addEventListener('radio-key', e => {
+    if (scnBtn.classList.contains('active')) return;
+    const ch = CH_NAMES[chIdx].trim();
+    if (e.detail.key === 'ENT') {
+      if (!scan_list.includes(ch)) scan_list.push(ch);
+      updateScnLed();
+    } else if (e.detail.key === 'CLR') {
+      scan_list = scan_list.filter(c => c !== ch);
+      updateScnLed();
+    }
   });
 
   /* ── Power on/off via VOL knob click ── */
@@ -707,6 +858,7 @@ input[type=range].vol-slider::-moz-range-thumb{
       document.getElementById('btn-'+name).classList.add('active');
       document.getElementById('pip-'+name).classList.add('on');
     });
+    updateScnLed();
   }
 
   function powerOff(){
