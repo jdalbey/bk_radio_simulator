@@ -390,10 +390,15 @@ input[type=range].vol-slider::-moz-range-thumb{
   background:#00d4bc;
   box-shadow:0 0 4px #00d4bc;
 }
+
+/* ── POWERED-OFF state (default) ── */
+.panel:not(.powered) .led-name { visibility:hidden; }
+.panel:not(.powered) .led-pip  { visibility:hidden; }
+.panel:not(.powered) .chan-cell { visibility:hidden; }
 </style>
 </head>
 <body>
-<div class="panel">
+<div class="panel" id="thePanel">
 
   <!-- ── LEFT SECTION ── -->
   <div class="left-section">
@@ -436,8 +441,8 @@ input[type=range].vol-slider::-moz-range-thumb{
       <!-- Pip row: 5 indicators above the 5 function buttons -->
       <div class="pip-row">
         <div class="pip-cell"><div class="led-pip" id="pip-MON"></div></div>
-        <div class="pip-cell"><div class="led-pip on" id="pip-SCN"></div></div>
-        <div class="pip-cell"><div class="led-pip on" id="pip-PRI"></div></div>
+        <div class="pip-cell"><div class="led-pip" id="pip-SCN"></div></div>
+        <div class="pip-cell"><div class="led-pip" id="pip-PRI"></div></div>
         <div class="pip-cell"><div class="led-pip" id="pip-GRP"></div></div>
         <div class="pip-cell"><div class="led-pip" id="pip-SQL"></div></div>
       </div>
@@ -447,8 +452,8 @@ input[type=range].vol-slider::-moz-range-thumb{
     <!-- Function buttons -->
     <div class="button-row">
       <button class="fn-btn" id="btn-MON">MON</button>
-      <button class="fn-btn active" id="btn-SCN">SCN</button>
-      <button class="fn-btn active" id="btn-PRI">PRI</button>
+      <button class="fn-btn" id="btn-SCN">SCN</button>
+      <button class="fn-btn" id="btn-PRI">PRI</button>
       <button class="fn-btn" id="btn-GRP">GRP</button>
       <button class="fn-btn" id="btn-SQL">SQL</button>
     </div>
@@ -688,6 +693,34 @@ input[type=range].vol-slider::-moz-range-thumb{
   document.getElementById('txIndicator').addEventListener('click', function(){
     this.classList.toggle('on');
   });
+
+  /* ── Power on/off via VOL knob click ── */
+  const thePanel = document.getElementById('thePanel');
+  let powered = false;
+
+  function powerOn(){
+    powered = true;
+    thePanel.classList.add('powered');
+    chIdx = 3; // SQF CH4
+    setChAngle(false);
+    ['SCN','PRI'].forEach(name=>{
+      document.getElementById('btn-'+name).classList.add('active');
+      document.getElementById('pip-'+name).classList.add('on');
+    });
+  }
+
+  function powerOff(){
+    powered = false;
+    thePanel.classList.remove('powered');
+    document.querySelectorAll('.fn-btn').forEach(btn=>{
+      btn.classList.remove('active');
+      const pip = document.getElementById('pip-'+btn.id.replace('btn-',''));
+      if(pip) pip.classList.remove('on');
+    });
+    chanCells.forEach(cell=>{ cell.textContent='\u00a0'; });
+  }
+
+  volSvg.addEventListener('click', ()=>{ powered ? powerOff() : powerOn(); });
 })();
 </script>
 </body>
