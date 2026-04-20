@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BK Radio DMH Panel</title>
+<style>
+@font-face{
+  font-family:'DSEG14Classic';
+  src:url('DSEG14Classic-Regular.woff2') format('woff2'),
+      url('DSEG14Classic-Regular.woff') format('woff');
+  font-weight:normal; font-style:normal;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  background:#8f8e8e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  font-family:system-ui,sans-serif;
+}
+
+/* ── PANEL BODY ── */
+.panel{
+  width:900px;
+  background:linear-gradient(175deg,#363636 0%,#282828 100%);
+  border-radius:10px;
+  border:2px solid #111;
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.85),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -1px 0 rgba(0,0,0,0.5);
+  display:flex;
+  flex-direction:row;
+  overflow:hidden;
+}
+
+/* ── LEFT CONTROL SECTION ── */
+.left-section{
+  width:570px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  padding:10px 12px 12px 14px;
+  gap:7px;
+  border-right:3px solid #111;
+}
+
+/* ── DISPLAY PANEL ── */
+.display-panel{
+  background:#090909;
+  border:1px solid #3a3a3a;
+  border-radius:5px;
+  padding:6px 8px 5px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.8);
+}
+
+/* Shared row wrapper for LED row and channel text row */
+.disp-row{
+  display:flex;
+  align-items:center;
+}
+
+/* 7-column grid used by both LED row and channel text row */
+.led-grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  justify-items:center;
+  flex:1;
+  padding:0 22px;
+}
+
+.chan-grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  flex:1;
+  padding:0 24px;
+}
+
+/* TX transmit indicator: small circle in left margin of display panel */
+.tx-indicator{
+  width:9px; height:9px;
+  border-radius:50%;
+  background:#1a0000;
+  border:1px solid #400;
+  flex-shrink:0;
+  margin-right:4px;
+  transition:background 0.15s, box-shadow 0.15s;
+  cursor:pointer;
+}
+.tx-indicator.on{
+  background:#ff2200;
+  box-shadow:0 0 6px #ff2200, 0 0 12px rgba(255,34,0,0.4);
+}
+
+/* Spacer matching tx-indicator so chan-grid stays aligned with led-grid */
+.tx-spacer{
+  width:9px;
+  margin-right:4px;
+  flex-shrink:0;
+}
+
+/* Spacer that mirrors the dimmer-sensor width so chan-grid = led-grid width */
+.disp-spacer{
+  width:9px;
+  flex-shrink:0;
+}
+
+/* Individual channel character cell */
+.chan-cell{
+  font-size:46px;
+  font-family:'DSEG14Classic','Courier New',monospace;
+  font-weight:normal;
+  color:#00d4bc;
+  text-shadow:0 0 10px rgba(0,212,188,0.5),0 0 20px rgba(0,212,188,0.15);
+  text-align:center;
+  line-height:1;
+  user-select:none;
+}
+
+.led-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+}
+
+/* Segmented icon: two diagonal hash lines like the illustration */
+.seg-icon{
+  width:22px; height:14px;
+  position:relative;
+  overflow:hidden;
+}
+.seg-icon svg{ display:block; }
+
+.led-name{
+  font-size:14px;
+  /*color:#555;*/color:#00d4bc;
+  font-family:monospace;
+  letter-spacing:0.5px;
+}
+
+.led-pip{
+  width:0; height:0;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-top:9px solid #222;
+  transition:border-top-color 0.1s;
+}
+.led-pip.on{ border-top-color:#00d4bc; }
+
+.dimmer-sensor{
+  width:9px; height:9px;
+  border-radius:50%;
+  background:#1a1a1a;
+  border:1px solid #3a3a3a;
+  margin-left:auto;
+  flex-shrink:0;
+}
+
+/* main channel display */
+.main-display{
+  display:flex;
+  align-items:baseline;
+  padding:0 4px;
+  gap:0;
+}
+
+.ch-label-sm{
+  font-size:10px;
+  color:#007a6e;
+  font-family:monospace;
+  letter-spacing:1px;
+  margin-right:6px;
+  align-self:flex-end;
+  padding-bottom:4px;
+}
+
+.channel-text{
+  font-size:52px;
+  font-family:'Courier New',monospace;
+  font-weight:bold;
+  color:#00d4bc;
+  text-shadow:0 0 12px rgba(0,212,188,0.55),0 0 24px rgba(0,212,188,0.2);
+  letter-spacing:6px;
+  line-height:1;
+}
+
+.channel-num{
+  font-size:42px;
+  font-family:'Courier New',monospace;
+  color:#00d4bc;
+  text-shadow:0 0 12px rgba(0,212,188,0.55);
+  margin-left:auto;
+  line-height:1;
+}
+
+/* ── PIP ROW (above function buttons) ── */
+.pip-row{
+  display:flex;
+  gap:5px;
+}
+.pip-cell{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:7px;
+  padding-top:12px;
+}
+
+/* ── FUNCTION BUTTONS ── */
+.button-row{
+  display:flex;
+  gap:5px;
+}
+
+.fn-btn{
+  flex:1;
+  padding:2px 2px;
+  background:linear-gradient(180deg,#272727 0%,#1c1c1c 100%);
+  color:#aaa;
+  border:1px solid #505050;
+  border-bottom:2px solid #0d0d0d;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:14px;
+  font-family:monospace;
+  letter-spacing:1px;
+  font-weight:bold;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
+  transition:all 0.05s;
+  user-select:none;
+}
+.fn-btn:hover{ color:#ccc; }
+.fn-btn:active{ transform:translateY(1px); border-bottom-width:1px; background:#111; }
+.fn-btn.active{
+  color:yellow; /*#00e5c8;*/
+  border-color:ivory; /*#007a6e;*/
+  box-shadow:0 0 5px rgba(0,229,200,0.25),inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ── KNOB ROW ── */
+.knob-row{
+  display:flex;
+  align-items:center;
+  flex:1;
+}
+
+.mic-jack{ flex-shrink:0; }
+
+.knob-group{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+}
+
+.knob-label{
+  font-size:9px;
+  color:#777;
+  font-family:monospace;
+  letter-spacing:1px;
+}
+
+svg.knob-svg{ display:block; }
+
+/* vol slider */
+input[type=range].vol-slider{
+  -webkit-appearance:none;
+  appearance:none;
+  width:76px;
+  height:5px;
+  border-radius:3px;
+  background:#3a3a3a;
+  outline:none;
+  cursor:pointer;
+  margin-top:3px;
+}
+input[type=range].vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px; height:14px;
+  border-radius:50%;
+  background:#888;
+  cursor:pointer;
+  border:1px solid #bbb;
+}
+input[type=range].vol-slider::-moz-range-thumb{
+  width:14px; height:14px;
+  border-radius:50%;
+  background:#888;
+  border:1px solid #bbb;
+  cursor:pointer;
+}
+
+/* ch buttons */
+.ch-btns{ display:flex; gap:5px; margin-top:3px; }
+.ch-btn{
+  padding:3px 8px;
+  background:#111827;
+  color:white;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:12px;
+}
+.ch-btn:active{ transform:translateY(1px); }
+
+/* ── RIGHT SPEAKER SECTION ── */
+.right-section{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:linear-gradient(180deg,#2f2f2f 0%,#252525 100%);
+  padding:12px 14px 12px 12px;
+  gap:5px;
+  position:relative;
+}
+
+.grille-slot{
+  height:4px;
+  background:#141414;
+  border-radius:2px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.03);
+}
+
+.brand-bar{
+  position:absolute;
+  bottom:14px;
+  right:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:3px;
+}
+
+.brand-logo{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.bk-triangle{
+  width:0; height:0;
+  border-left:9px solid transparent;
+  border-right:0px solid transparent;
+  border-bottom:15px solid #777;
+}
+
+.bk-text{
+  font-size:13px;
+  font-weight:bold;
+  color:#777;
+  letter-spacing:2px;
+  font-family:Arial,sans-serif;
+}
+
+.bk-sub{
+  font-size:8px;
+  color:#444;
+  letter-spacing:1px;
+  font-family:Arial,sans-serif;
+}
+
+/* Function button indicators on right side */
+.fn-indicators{
+  position:absolute;
+  top:14px;
+  right:14px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.fn-ind{
+  width:9px; height:9px;
+  border-radius:2px;
+  background:#111;
+  border:1px solid #2a2a2a;
+  transition:background 0.1s, box-shadow 0.1s;
+}
+.fn-ind.on{
+  background:#00d4bc;
+  box-shadow:0 0 4px #00d4bc;
+}
+</style>
+</head>
+<body>
+<div class="panel">
+
+  <!-- ── LEFT SECTION ── -->
+  <div class="left-section">
+
+    <!-- Display panel -->
+    <div class="display-panel">
+
+      <!-- LED indicator row: tx circle + 7-column grid -->
+      <div class="disp-row">
+        <div class="tx-indicator" id="txIndicator" title="Transmit Indicator"></div>
+        <div class="led-grid">
+          <div class="led-item"><div class="led-name">PRG</div></div>
+          <div class="led-item"><div class="led-name">PR</div></div>
+          <div class="led-item"><div class="led-name">TX</div></div>
+          <div class="led-item"><div class="led-name">RX</div></div>
+          <div class="led-item"><div class="led-name">SCN</div></div>
+          <div class="led-item"><div class="led-name">ID</div></div>
+          <div class="led-item"><div class="led-name">CG</div></div>
+          <div class="led-item"><div class="led-name">TEL</div></div>
+        </div>
+        <div class="dimmer-sensor" title="Display Dimming Sensor"></div>
+      </div>
+
+      <!-- Channel text row: tx-spacer + 8-column grid (content set by JS) -->
+      <div class="disp-row">
+        <div class="tx-spacer"></div>
+        <div class="chan-grid">
+          <div class="chan-cell">S</div>
+          <div class="chan-cell">Q</div>
+          <div class="chan-cell">F</div>
+          <div class="chan-cell">&nbsp;</div>
+          <div class="chan-cell">C</div>
+          <div class="chan-cell">H</div>
+          <div class="chan-cell">1</div>
+          <div class="chan-cell">&nbsp;</div>
+        </div>
+        <div class="disp-spacer"></div>
+      </div>
+
+      <!-- Pip row: 5 indicators above the 5 function buttons -->
+      <div class="pip-row">
+        <div class="pip-cell"><div class="led-pip" id="pip-MON"></div></div>
+        <div class="pip-cell"><div class="led-pip on" id="pip-SCN"></div></div>
+        <div class="pip-cell"><div class="led-pip on" id="pip-PRI"></div></div>
+        <div class="pip-cell"><div class="led-pip" id="pip-GRP"></div></div>
+        <div class="pip-cell"><div class="led-pip" id="pip-SQL"></div></div>
+      </div>
+
+    </div><!-- /display-panel -->
+
+    <!-- Function buttons -->
+    <div class="button-row">
+      <button class="fn-btn" id="btn-MON">MON</button>
+      <button class="fn-btn active" id="btn-SCN">SCN</button>
+      <button class="fn-btn active" id="btn-PRI">PRI</button>
+      <button class="fn-btn" id="btn-GRP">GRP</button>
+      <button class="fn-btn" id="btn-SQL">SQL</button>
+    </div>
+
+    <!-- Knob row: mic jack | VOL knob | CH knob -->
+    <div class="knob-row">
+
+      <!-- Mic connector -->
+      <svg class="mic-jack" width="46" height="62" viewBox="0 0 46 62" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="44" height="60" rx="6" fill="#161616" stroke="#3a3a3a" stroke-width="1.5"/>
+        <rect x="7" y="7" width="32" height="24" rx="3" fill="#0a0a0a" stroke="#2a2a2a" stroke-width="1"/>
+        <rect x="11" y="13" width="5" height="10" rx="1.5" fill="#444"/>
+        <rect x="20" y="13" width="5" height="10" rx="1.5" fill="#444"/>
+        <rect x="29" y="13" width="5" height="10" rx="1.5" fill="#444"/>
+        <text x="23" y="48" font-size="7" fill="#555" text-anchor="middle" font-family="monospace" letter-spacing="1">MIC</text>
+      </svg>
+
+      <!-- VOL knob: broken ring + slider (centered under PRI button) -->
+      <div class="knob-group" style="margin-left:183px">
+        <div class="knob-label">VOL</div>
+        <svg class="knob-svg" width="86" height="86" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="fgVol" cx="35%" cy="25%" r="75%">
+              <stop offset="0%" stop-color="#5a5a5a"/>
+              <stop offset="60%" stop-color="#3a3a3a"/>
+              <stop offset="100%" stop-color="#252525"/>
+            </radialGradient>
+            <radialGradient id="bvVol" cx="30%" cy="20%" r="80%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+              <stop offset="60%" stop-color="rgba(0,0,0,0.3)"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="92" fill="#1a1a1a"/>
+          <circle cx="100" cy="100" r="78" fill="url(#fgVol)"/>
+          <circle cx="100" cy="100" r="78" fill="url(#bvVol)" style="mix-blend-mode:overlay;opacity:0.6"/>
+          <!-- broken ring: 330° arc at r=60, 30° gap at top; radial tick in gap -->
+          <g id="volInd" transform="translate(100,100) rotate(-135)">
+            <path d="M 15.53,-57.95 A 60,60 0 1 1 -15.53,-57.95"
+                  fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="0" y1="-53" x2="0" y2="-67"
+                  stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <input type="range" class="vol-slider" id="volSlider" min="0" max="11" value="0" step="1"
+               aria-label="Volume"/>
+      </div>
+
+      <!-- CH knob: yellow dot + buttons (centered under SQL button) -->
+      <div class="knob-group" style="margin-left:134px">
+        <div class="knob-label">CH</div>
+        <svg class="knob-svg" width="86" height="86" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="fgCh" cx="35%" cy="25%" r="75%">
+              <stop offset="0%" stop-color="#5a5a5a"/>
+              <stop offset="60%" stop-color="#3a3a3a"/>
+              <stop offset="100%" stop-color="#252525"/>
+            </radialGradient>
+            <radialGradient id="bvCh" cx="30%" cy="20%" r="80%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+              <stop offset="60%" stop-color="rgba(0,0,0,0.3)"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="92" fill="#1a1a1a"/>
+          <circle cx="100" cy="100" r="78" fill="url(#fgCh)"/>
+          <circle cx="100" cy="100" r="78" fill="url(#bvCh)" style="mix-blend-mode:overlay;opacity:0.6"/>
+          <g id="chInd" transform="translate(100,100) rotate(-135)">
+            <circle cx="0" cy="-60" r="6" fill="#ffb020" stroke="#7a3e00" stroke-width="1"/>
+          </g>
+        </svg>
+        <div class="ch-btns">
+          <button class="ch-btn" id="chLeft">◀</button>
+          <button class="ch-btn" id="chRight">▶</button>
+        </div>
+      </div>
+
+    </div><!-- /knob-row -->
+
+  </div><!-- /left-section -->
+
+  <!-- ── RIGHT SPEAKER SECTION ── -->
+  <div class="right-section" id="rightSection">
+    <!-- grille slots injected by JS -->
+
+    <div class="brand-bar">
+      <div class="brand-logo">
+        <div class="bk-triangle"></div>
+        <span class="bk-text">BK RADIO</span>
+      </div>
+      <span class="bk-sub">DMH &nbsp; Digital</span>
+    </div>
+  </div>
+
+</div><!-- /panel -->
+
+<script>
+(function(){
+  const MIN_A = -135, MAX_A = 135;
+  const VOL_STEPS = 12, VOL_STEP_A = (MAX_A - MIN_A) / (VOL_STEPS - 1);
+  const CH_STEPS  = 16, CH_STEP_A  = (MAX_A - MIN_A) / (CH_STEPS  - 1);
+
+  /* Channel name table — 8 chars each, space-padded */
+  const CH_NAMES = [
+    'SQF CH1 ', 'SQF CH2 ', 'SQF CH3 ', 'SQF CH4 ',
+    'SQF CH5 ', 'SQF CH6 ', 'SQF CH7 ', 'SQF CH8 ',
+    'SQF CH9 ', 'SQF CH10', 'SQF CH11', 'SQF CH12',
+    'SQF CH13', 'SQF CH14', 'SQF CH15', 'SQF CH16'
+  ];
+
+  /* Speaker grille slots */
+  const rightSec = document.getElementById('rightSection');
+  const brandBar = rightSec.querySelector('.brand-bar');
+  for(let i=0; i<20; i++){
+    const s = document.createElement('div');
+    s.className = 'grille-slot';
+    rightSec.insertBefore(s, brandBar);
+  }
+
+  /* ── VOL knob (broken ring + slider) ── */
+  const volInd    = document.getElementById('volInd');
+  const volSlider = document.getElementById('volSlider');
+  let volIdx = 0;
+
+  function setVolAngle(animate){
+    const a = MIN_A + volIdx * VOL_STEP_A;
+    volInd.style.transition = animate ? 'transform 180ms cubic-bezier(.22,.9,.32,1)' : 'none';
+    volInd.style.transform  = `translate(100px,100px) rotate(${a}deg)`;
+    volSlider.value = volIdx;
+  }
+
+  volSlider.addEventListener('input', ()=>{ volIdx = +volSlider.value; setVolAngle(true); });
+  volInd.setAttribute('transform', `translate(100,100) rotate(${MIN_A})`);
+  volInd.style.transform = '';
+  setVolAngle(false);
+
+  /* ── CH knob (yellow dot + buttons) ── */
+  const chInd     = document.getElementById('chInd');
+  const chanCells = document.querySelectorAll('.chan-cell');
+  const chLeft    = document.getElementById('chLeft');
+  const chRight   = document.getElementById('chRight');
+  let chIdx = 0;
+
+  function setChAngle(animate){
+    const a = MIN_A + chIdx * CH_STEP_A;
+    chInd.style.transition = animate ? 'transform 180ms cubic-bezier(.22,.9,.32,1)' : 'none';
+    chInd.style.transform  = `translate(100px,100px) rotate(${a}deg)`;
+    const name = CH_NAMES[chIdx];
+    chanCells.forEach((cell, i) => { cell.textContent = name[i] ?? '\u00a0'; });
+  }
+
+  chLeft.addEventListener('click',  ()=>{ chIdx = Math.max(0, chIdx - 1);            setChAngle(true); });
+  chRight.addEventListener('click', ()=>{ chIdx = Math.min(CH_STEPS - 1, chIdx + 1); setChAngle(true); });
+
+  /* mouse wheel on CH knob */
+  chInd.closest('svg').addEventListener('wheel', e=>{
+    e.preventDefault();
+    chIdx = e.deltaY > 0 ? Math.min(CH_STEPS - 1, chIdx + 1) : Math.max(0, chIdx - 1);
+    setChAngle(true);
+  }, {passive:false});
+
+  chInd.setAttribute('transform', `translate(100,100) rotate(${MIN_A})`);
+  chInd.style.transform = '';
+  setChAngle(false);
+
+  /* ── Function buttons: toggle active + illuminate corresponding pip ── */
+  document.querySelectorAll('.fn-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      btn.classList.toggle('active');
+      const pip = document.getElementById('pip-' + btn.id.replace('btn-', ''));
+      if(pip) pip.classList.toggle('on', btn.classList.contains('active'));
+    });
+  });
+
+  /* ── TX transmit indicator (illuminated by mic PTT — toggled here for testing) ── */
+  document.getElementById('txIndicator').addEventListener('click', function(){
+    this.classList.toggle('on');
+  });
+})();
+</script>
+</body>
+</html>
