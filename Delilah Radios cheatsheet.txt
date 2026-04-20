@@ -1,0 +1,64 @@
+﻿RADIO CHEATSHEET
+
+
+Channels: Want to change channels?
+1. Turn PRI SCAN off (push PRI & SCAN buttons on radio)
+2. Turn channel selector to desired channel
+3. Proceed with transmission
+4. Return “home”, Turn channel selector back to SQF channel 4, tone 12
+5. Turn PRI & SCAN on
+
+
+Tones: Want to change tones?
+1. Turn PRI & SCAN off
+2. Turn channel selector to desired channel (if you’re changing channels)
+3. Tap desired tone number on the mic keypad
+4. Proceed with transmission
+5. Return “home” (channel 4, tone 12):
+1. Turn channel selector back to channel 4 (if you changed channels)
+2. Enter 12 on the mic keypad
+3. Turn PRI & SCAN on
+
+
+Zones:   Want to change zones (formerly called Groups)? 
+*** only do this if specifically asked to do so
+FYI:  10:  HLRD, FKU,   11:  HLRD, TUU,    13: HLRD-FIRE,    14: HLRD, KNP SNF
+1. Turn PRI & SCAN off
+2. On the base mic, tap the pound (#) sign
+3. On the base mic, tap the desired zone number (10, 11, 13, 14, etc.)
+4. On the base mic, tap the “ENT” key
+5. Select channel and proceed with your business
+6. Return to Zone 14:
+1. On the base mic, tap pound (#) sign
+2. On the base mic, tap the number 14
+3. On the base mic, tap the “ENT” key
+4. Turn radio to channel 4, tone 12
+5. Turn PRI & SCAN on
+6. Turn the radio off then back on checking the faceplate to confirm zone
+
+
+SCAN:  Want to add/remove from scan list?
+To check to see if a channel is on the scan list:
+1. Take radio out of scan mode
+2. Turn to desired channel.  SCN will appear in the display if it’s on the scan list
+
+
+To program a scan list:
+1. Take the radio out of scan mode
+2. Place channel selector knob on channel you wish to add or remove
+1. Add a channel - Tap the “ENT” key on the right side of the keypad. 
+You will hear a beep then see “SCN” on the display.  This will indicate 
+that you have chosen that channel to scan
+2. Remove a channel - Tap the “CLR” key on the right side of the keypad.  
+The “SCN” on the display will be removed and you’re no longer 
+scanning that channel
+
+
+Priority:  Need to change the priority?
+To change the priority channel:
+1. Turn PRI and SCAN off
+2. Select the channel to be designated priority
+3. Tap PRI on the right side of the keypad and “priority” should show in the display
+4. Turn PRI & SCAN on
+
+
