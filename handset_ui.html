@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Radio Handset UI</title>
+
+<style>
+  body {
+    background: #ddd;
+    font-family: sans-serif;
+  }
+
+  .handset {
+    width: 260px;
+    margin: 0;
+    padding: 20px 15px 30px;
+    background: linear-gradient(#444, #222);
+    border-radius: 40px;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,0.2),
+                0 8px 20px rgba(0,0,0,0.4);
+  }
+
+  .mic_slot {
+    width: 60px;
+    height: 10px;
+    margin: 0 auto 15px;
+    background: #111;
+    border-radius: 6px;
+  }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  button.key {
+    height: 45px;
+    border-radius: 10px;
+    border: none;
+    background: #666;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px #222;
+  }
+
+  button.key:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px #111;
+  }
+
+  button.func {
+    background: #555;
+    font-size: 16px;
+  }
+
+  .handset-wrapper {
+    display: flex;
+    align-items: flex-start;
+    width: fit-content;
+    margin: 40px auto;
+  }
+
+  .ptt_btn {
+    margin-top: 45px; /* aligns with keypad top row (padding 20px + mic_slot 10px + margin 15px) */
+    margin-right: 10px;
+  }
+
+  .ptt_btn .key {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="handset-wrapper">
+<div class="ptt_btn">
+  <button class="key func">&nbsp;PTT&nbsp;</button>
+</div>
+
+<div class="handset" id="handset">
+  <div class="mic_slot"></div>
+
+  <div class="keypad">
+    <button class="key">1</button>
+    <button class="key">2</button>
+    <button class="key">3</button>
+    <button class="key func">FCN</button>
+
+    <button class="key">4</button>
+    <button class="key">5</button>
+    <button class="key">6</button>
+    <button class="key func">PRI</button>
+
+    <button class="key">7</button>
+    <button class="key">8</button>
+    <button class="key">9</button>
+    <button class="key func">ENT</button>
+
+    <button class="key">*</button>
+    <button class="key">0</button>
+    <button class="key">#</button>
+    <button class="key func">CLR</button>
+  </div>
+</div>
+</div>
+
+<script>
+  const handset = document.getElementById('handset');
+
+  function emitKey(key) {
+    // Dispatch event for your app to consume
+    handset.dispatchEvent(new CustomEvent('radio-key', {
+      detail: { key }
+    }));
+
+    console.log("Key pressed:", key); // debug
+  }
+
+  // Mouse click handling
+  document.querySelectorAll('.key').forEach(btn => {
+    btn.addEventListener('click', () => {
+      emitKey(btn.textContent);
+    });
+  });
+
+  // Keyboard handling
+  document.addEventListener('keydown', (e) => {
+    let key = null;
+
+    if (e.key >= '0' && e.key <= '9') key = e.key;
+    else if (e.key === '*') key = '*';
+    else if (e.key === '#') key = '#';
+
+    if (key) {
+      emitKey(key);
+
+      // Optional: visual press feedback
+      const btn = [...document.querySelectorAll('.key')]
+        .find(b => b.textContent === key);
+
+      if (btn) {
+        btn.classList.add('active');
+        setTimeout(() => btn.classList.remove('active'), 100);
+      }
+    }
+  });
+
+  // Example listener (your app would replace this)
+  handset.addEventListener('radio-key', e => {
+    // Hook point
+    // e.detail.key contains the value
+  });
+</script>
+
+</body>
+</html>
