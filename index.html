@@ -487,8 +487,8 @@ button.func {
         <div class="tx-indicator" id="txIndicator" title="Transmit Indicator"></div>
         <div class="led-grid">
           <div class="led-item"><div class="led-name">PRG</div></div>
-          <div class="led-item"><div class="led-name">PR</div></div>
-          <div class="led-item"><div class="led-name">TX</div></div>
+          <div class="led-item"><div class="led-name" id="led-PR">PR</div></div>
+          <div class="led-item"><div class="led-name" id="led-TX">TX</div></div>
           <div class="led-item"><div class="led-name">RX</div></div>
           <div class="led-item"><div class="led-name" id="led-SCN">SCN</div></div>
           <div class="led-item"><div class="led-name">ID</div></div>
@@ -829,8 +829,9 @@ button.func {
   /* ── TX transmit indicator — driven by handset PTT hold ── */
   const txIndicator = document.getElementById('txIndicator');
   const pttBtn = document.querySelector('.ptt_btn .key');
-  function pttPress(e) { e.preventDefault(); emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); } pttMuted = true; applyAudioVolume(); }
-  function pttRelease(e) { e.preventDefault(); txIndicator.classList.remove('on'); pttMuted = false; applyAudioVolume(); }
+  const txLed = document.getElementById('led-TX');
+  function pttPress(e) { e.preventDefault(); emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); txLed.classList.add('on'); } pttMuted = true; applyAudioVolume(); }
+  function pttRelease(e) { e.preventDefault(); txIndicator.classList.remove('on'); txLed.classList.remove('on'); pttMuted = false; applyAudioVolume(); }
   pttBtn.addEventListener('mousedown',  pttPress);
   pttBtn.addEventListener('mouseup',    pttRelease);
   pttBtn.addEventListener('mouseleave', pttRelease);
