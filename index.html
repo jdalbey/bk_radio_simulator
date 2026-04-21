@@ -889,9 +889,13 @@ button.func {
       document.getElementById('pip-'+name).classList.add('on');
     });
     updateScnLed();
-    radioAudio.currentTime = 0;
-    radioAudio.play();
-    applyAudioVolume();
+    const beep = new Audio('poweron_beep.mp3');
+    beep.play();
+    beep.onended = () => {
+      radioAudio.currentTime = 0;
+      radioAudio.play();
+      applyAudioVolume();
+    };
   }
 
   function powerOff(){
