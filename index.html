@@ -427,23 +427,28 @@ input[type=range].vol-slider::-moz-range-thumb{
   gap: 10px;
 }
 button.key {
-  height: 45px;
-  border-radius: 10px;
+  height: 32px;
+  border-radius: 36px;
   border: none;
-  background: #666;
-  color: white;
+  background: #E6EEF0;
+  color: black;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 3px #222;
+  box-shadow: 0 3px #aaa;
 }
 button.key:active {
   transform: translateY(2px);
-  box-shadow: 0 1px #111;
+  box-shadow: 0 1px #888;
 }
 button.func {
-  background: #555;
   font-size: 16px;
+}
+.ptt_btn .key {
+  background: #555;
+  color: white;
+  box-shadow: 0 3px #222;
+  border-radius: 10px;
 }
 .handset-wrapper {
   display: flex;
@@ -646,7 +651,7 @@ button.func {
   </div>
 </div>
 
-<a href="Quick%20start" style="display:block;text-align:center;margin-top:12px;color:#4183C4;font-size:18px;font-family:sans-serif;text-decoration:underline;">Help</a>
+<a href="Quick%20start" style="display:block;text-align:center;margin-top:12px;color:blue;font-size:18px;font-family:sans-serif;text-decoration:underline;">Quick Start</a>
 
 <audio id="radioAudio" src="Morning_Report.mp3" loop></audio>
 
@@ -750,7 +755,7 @@ button.func {
   /* ── VOL knob (broken ring + slider) ── */
   const volInd    = document.getElementById('volInd');
   const volSlider = document.getElementById('volSlider');
-  let volIdx = 0;
+  let volIdx = 2;
 
   function setVolAngle(animate){
     const a = MIN_A + volIdx * VOL_STEP_A;
