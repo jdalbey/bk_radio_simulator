@@ -902,6 +902,7 @@ button.func {
   }
 
   volSvg.addEventListener('click', ()=>{ if(volDragged){ volDragged=false; return; } powered ? powerOff() : powerOn(); });
+  volSvg.addEventListener('touchend', e=>{ e.preventDefault(); if(volDragged){ volDragged=false; return; } powered ? powerOff() : powerOn(); });
 })();
 </script>
 </body>
