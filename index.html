@@ -829,9 +829,14 @@ button.func {
   /* ── TX transmit indicator — driven by handset PTT hold ── */
   const txIndicator = document.getElementById('txIndicator');
   const pttBtn = document.querySelector('.ptt_btn .key');
-  pttBtn.addEventListener('mousedown', () => { emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); } pttMuted = true; applyAudioVolume(); });
-  pttBtn.addEventListener('mouseup',   () => { txIndicator.classList.remove('on'); pttMuted = false; applyAudioVolume(); });
-  pttBtn.addEventListener('mouseleave',() => { txIndicator.classList.remove('on'); pttMuted = false; applyAudioVolume(); });
+  function pttPress(e) { e.preventDefault(); emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); } pttMuted = true; applyAudioVolume(); }
+  function pttRelease(e) { e.preventDefault(); txIndicator.classList.remove('on'); pttMuted = false; applyAudioVolume(); }
+  pttBtn.addEventListener('mousedown',  pttPress);
+  pttBtn.addEventListener('mouseup',    pttRelease);
+  pttBtn.addEventListener('mouseleave', pttRelease);
+  pttBtn.addEventListener('touchstart', pttPress,   {passive:false});
+  pttBtn.addEventListener('touchend',   pttRelease, {passive:false});
+  pttBtn.addEventListener('touchcancel',pttRelease, {passive:false});
 
   /* ── Handset keypad ── */
   const handset = document.getElementById('handset');
