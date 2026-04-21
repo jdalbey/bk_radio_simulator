@@ -12,6 +12,10 @@ To increase the volume, grab the slider and move it to the right or drag the mou
 
 Similarly to change channels, click the left or right button underneath the channel knob or drag with the mouse or scroll the mouse wheel while hovering over the channel button. 
 
+#### Transmit
+
+Press and hold the mouse button on the "PTT" key on the handset.  The transmit indicator glows red in the upper left corner of the display.
+
 #### View the scan list
 
 To see whether a particular channel is currently on the scan list, click the scan function button to disable the scan function. Then the scan function will be disabled. Use the channel selector knob to turn to the desired channel. SCN will appear illuminated in the display if it's on the scan list. 
