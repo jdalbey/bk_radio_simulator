@@ -22,8 +22,7 @@ When the SCN button is depressed the radio checks for signals on channels in the
 as well as the channel selected by the Channel Selector knob.
 When a signal is detected, scanning stops and the message is received.
 The received channel is displayed in place of the transmit channel.
-Once the signal ends, the radio continues to monitor the channel for the
-preset scan delay time before it resumes scanning.
+Once the signal ends, the radio continues to monitor the channel for the preset scan delay time before it resumes scanning.
 
 #### View the scan list
 
@@ -37,6 +36,10 @@ To remove a channel from the scan list, click clear (CLR) on the handset keypad.
 The SCN LED will go out. 
 
 When done, rotate the channel selector back to the home channel and click the SCN button to return to scan mode. 
+
+#### Priority Scan
+
+Priority Scan enables the radio to receive on any channel while monitoring for a message on the designated priority channel. Priority Scan operates only while the radio is not transmitting and can be used in combination with scan operation. Press the PRI button to start or stop priority scanning. When Priority Scan is on, the PR led illuminates, and the display flashes SCN. If a message is received on a priority channel, the Priority indicator illuminates, and the radio receiver locks onto that channel for the duration of the transmission.  
 
 #### Power Off
 
