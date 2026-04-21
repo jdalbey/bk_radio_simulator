@@ -153,6 +153,13 @@ body{
   color:#00ffee;
   text-shadow:0 0 6px #00d4bc, 0 0 14px rgba(0,212,188,0.5);
 }
+@keyframes scn-flash{
+  0%,100%{ color:#00ffee; text-shadow:0 0 6px #00d4bc, 0 0 14px rgba(0,212,188,0.5); }
+  50%    { color:#4e6462; text-shadow:none; }
+}
+.led-name.flashing{
+  animation: scn-flash 1s step-start infinite;
+}
 
 .led-pip{
   width:0; height:0;
@@ -485,6 +492,7 @@ button.func {
       <!-- LED indicator row: tx circle + 7-column grid -->
       <div class="disp-row">
         <div class="tx-indicator" id="txIndicator" title="Transmit Indicator"></div>
+        <div class="pr-indicator" id="prIndicator" title="Priority Indicator"></div>
         <div class="led-grid">
           <div class="led-item"><div class="led-name">PRG</div></div>
           <div class="led-item"><div class="led-name" id="led-PR">PR</div></div>
@@ -685,10 +693,12 @@ button.func {
   const scnLed = document.getElementById('led-SCN');
 
   function updateScnLed() {
-    if (!scnBtn.classList.contains('active')) {
-      scnLed.classList.toggle('on', scan_list.includes(CH_NAMES[chIdx].trim()));
-    } else {
+    if (scnBtn.classList.contains('active')) {
       scnLed.classList.remove('on');
+      scnLed.classList.add('flashing');
+    } else {
+      scnLed.classList.remove('flashing');
+      scnLed.classList.toggle('on', scan_list.includes(CH_NAMES[chIdx].trim()));
     }
   }
 
