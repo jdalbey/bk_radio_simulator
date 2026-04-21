@@ -4,7 +4,7 @@
 
 #### Power On
 
-Click the volume button to power on the radio. The display shows SQF CH4. The scan (SCN) and priority (PRI) mode buttons are active. 
+Click the volume button to power on the radio. The display shows SQF CH4. The scan (SCN) and priority (PRI) mode buttons are active. After a few moments a radio transmission begins.  (You may need to increase the volume to hear it.)
 
 #### Volume and Channel knobs
 
