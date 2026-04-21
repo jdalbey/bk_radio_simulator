@@ -4,7 +4,7 @@
 
 #### Power On
 
-Click the volume button to power on the radio. The display shows SQF CH4. The scan (SCN) and priority (PRI) mode buttons are active. After a few moments a radio transmission begins.  (You may need to increase the volume to hear it.)
+Click the volume button to power on the radio. The display shows SQF CH4. The scan (SCN) and priority (PRI) mode buttons are active. After a few moments a radio transmission begins.
 
 #### Volume and Channel knobs
 
@@ -15,6 +15,15 @@ Similarly to change channels, click the left or right button underneath the chan
 #### Transmit
 
 Press and hold the mouse button on the "PTT" key on the handset.  The transmit indicator glows red in the upper left corner of the display.
+
+#### Channel scanning
+
+When the SCN button is depressed the radio checks for signals on channels in the preset scan list, 
+as well as the channel selected by the Channel Selector knob.
+When a signal is detected, scanning stops and the message is received.
+The received channel is displayed in place of the transmit channel.
+Once the signal ends, the radio continues to monitor the channel for the
+preset scan delay time before it resumes scanning.
 
 #### View the scan list
 

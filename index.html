@@ -101,6 +101,19 @@ body{
   background:#ff2200;
   box-shadow:0 0 6px #ff2200, 0 0 12px rgba(255,34,0,0.4);
 }
+.pr-indicator{
+  width:9px; height:9px;
+  border-radius:50%;
+  background:#1a1000;
+  border:1px solid #440;
+  flex-shrink:0;
+  margin-right:4px;
+  transition:background 0.15s, box-shadow 0.15s;
+}
+.pr-indicator.on{
+  background:#ffaa00;
+  box-shadow:0 0 6px #ffaa00, 0 0 12px rgba(255,170,0,0.4);
+}
 
 /* Spacer matching tx-indicator so chan-grid stays aligned with led-grid */
 .tx-spacer{
@@ -661,7 +674,7 @@ button.func {
 
 <a href="Quick%20start" style="display:block;text-align:center;margin-top:12px;color:blue;font-size:18px;font-family:sans-serif;text-decoration:underline;">Quick Start</a>
 <p style="display:block;text-align:center;margin-top:12px;color:black;font-size:10px;font-family:sans-serif;">Build: 20260421181906-1448c14</p>
-<audio id="radioAudio" src="Morning_Report.mp3" loop></audio>
+<audio id="radioAudio" src="Morning_Report.mp3"></audio>
 
 <script>
 (function(){
@@ -677,6 +690,9 @@ button.func {
   function applyAudioVolume() {
     radioAudio.volume = (channelMuted || pttMuted) ? 0 : volIdx / 11;
   }
+  radioAudio.addEventListener('play',  () => { updatePrIndicator(); updateChanDisplay(); });
+  radioAudio.addEventListener('pause', () => { updatePrIndicator(); updateChanDisplay(); });
+  radioAudio.addEventListener('ended', () => { updatePrIndicator(); updateChanDisplay(); });
 
   /* Channel name table — 8 chars each, space-padded */
   const CH_NAMES = [
@@ -691,15 +707,43 @@ button.func {
 
   const scnBtn = document.getElementById('btn-SCN');
   const scnLed = document.getElementById('led-SCN');
+  const priBtn = document.getElementById('btn-PRI');
+  const prLed  = document.getElementById('led-PR');
+  let priChannel = BROADCAST_CHANNEL;
 
   function updateScnLed() {
-    if (scnBtn.classList.contains('active')) {
+    if (scnBtn.classList.contains('active') || priBtn.classList.contains('active')) {
       scnLed.classList.remove('on');
       scnLed.classList.add('flashing');
     } else {
       scnLed.classList.remove('flashing');
       scnLed.classList.toggle('on', scan_list.includes(CH_NAMES[chIdx].trim()));
     }
+  }
+
+  const prIndicator = document.getElementById('prIndicator');
+
+  function updatePriLed() {
+    prLed.classList.toggle('on', priBtn.classList.contains('active'));
+  }
+
+  function updatePrIndicator() {
+    const lit = priBtn.classList.contains('active') && !radioAudio.paused;
+    prIndicator.classList.toggle('on', lit);
+  }
+
+  function updateChanDisplay() {
+    const showPri = (scnBtn.classList.contains('active') || priBtn.classList.contains('active')) && !radioAudio.paused && !pttMuted;
+    const name = CH_NAMES[showPri ? priChannel : chIdx];
+    chanCells.forEach((cell, i) => { cell.textContent = name[i] ?? ' '; });
+  }
+
+  function setPriorityChannel() {
+    if (scnBtn.classList.contains('active') || priBtn.classList.contains('active')) return;
+    priChannel = chIdx;
+    new Audio('poweron_beep.mp3').play();
+    prLed.classList.add('on');
+    setTimeout(() => prLed.classList.toggle('on', priBtn.classList.contains('active')), 1500);
   }
 
   /*
@@ -802,10 +846,12 @@ button.func {
     const a = MIN_A + chIdx * CH_STEP_A;
     chInd.style.transition = animate ? 'transform 180ms cubic-bezier(.22,.9,.32,1)' : 'none';
     chInd.style.transform  = `translate(100px,100px) rotate(${a}deg)`;
-    const name = CH_NAMES[chIdx];
-    chanCells.forEach((cell, i) => { cell.textContent = name[i] ?? '\u00a0'; });
+    updateChanDisplay();
     updateScnLed();
-    channelMuted = (chIdx !== BROADCAST_CHANNEL);
+    const priActive = priBtn.classList.contains('active');
+    const scnActive = scnBtn.classList.contains('active');
+    const priChName = CH_NAMES[priChannel].trim();
+    channelMuted = !priActive && !(scnActive && scan_list.includes(priChName)) && (chIdx !== priChannel);
     applyAudioVolume();  
   }
 
@@ -834,14 +880,52 @@ button.func {
     });
   });
 
-  scnBtn.addEventListener('click', updateScnLed);
+  scnBtn.addEventListener('click', () => {
+    updateScnLed();
+    const priActive = priBtn.classList.contains('active');
+    const scnActive = scnBtn.classList.contains('active');
+    const priChName = CH_NAMES[priChannel].trim();
+    channelMuted = !priActive && !(scnActive && scan_list.includes(priChName)) && (chIdx !== priChannel);
+    applyAudioVolume();
+    updateChanDisplay();
+  });
+
+  let priLongPressed = false;
+  let priPressTimer  = null;
+  function priDown() {
+    priPressTimer = setTimeout(() => { priPressTimer = null; priLongPressed = true; setPriorityChannel(); }, 1000);
+  }
+  function priUp() { if (priPressTimer) { clearTimeout(priPressTimer); priPressTimer = null; } }
+  priBtn.addEventListener('mousedown',  priDown);
+  priBtn.addEventListener('mouseup',    priUp);
+  priBtn.addEventListener('mouseleave', priUp);
+  priBtn.addEventListener('touchstart', priDown, {passive:true});
+  priBtn.addEventListener('touchend',   priUp);
+  priBtn.addEventListener('touchcancel',priUp);
+  priBtn.addEventListener('click', () => {
+    if (priLongPressed) {
+      priLongPressed = false;
+      priBtn.classList.toggle('active');          // undo generic toggle
+      document.getElementById('pip-PRI').classList.toggle('on', priBtn.classList.contains('active'));
+      return;
+    }
+    updateScnLed();
+    updatePriLed();
+    updatePrIndicator();
+    const priActive = priBtn.classList.contains('active');
+    const scnActive = scnBtn.classList.contains('active');
+    const priChName = CH_NAMES[priChannel].trim();
+    channelMuted = !priActive && !(scnActive && scan_list.includes(priChName)) && (chIdx !== priChannel);
+    applyAudioVolume();
+    updateChanDisplay();
+  });
 
   /* ── TX transmit indicator — driven by handset PTT hold ── */
   const txIndicator = document.getElementById('txIndicator');
   const pttBtn = document.querySelector('.ptt_btn .key');
   const txLed = document.getElementById('led-TX');
-  function pttPress(e) { e.preventDefault(); emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); txLed.classList.add('on'); } pttMuted = true; applyAudioVolume(); }
-  function pttRelease(e) { e.preventDefault(); txIndicator.classList.remove('on'); txLed.classList.remove('on'); pttMuted = false; applyAudioVolume(); }
+  function pttPress(e) { e.preventDefault(); emitKey('PTT'); if (thePanel.classList.contains('powered')) { txIndicator.classList.add('on'); txLed.classList.add('on'); } pttMuted = true; applyAudioVolume(); updateChanDisplay(); }
+  function pttRelease(e) { e.preventDefault(); txIndicator.classList.remove('on'); txLed.classList.remove('on'); pttMuted = false; applyAudioVolume(); updateChanDisplay(); }
   pttBtn.addEventListener('mousedown',  pttPress);
   pttBtn.addEventListener('mouseup',    pttRelease);
   pttBtn.addEventListener('mouseleave', pttRelease);
@@ -874,6 +958,7 @@ button.func {
     }
   });
   handset.addEventListener('radio-key', e => {
+    if (e.detail.key.trim() === 'PRI') { setPriorityChannel(); return; }
     if (scnBtn.classList.contains('active')) return;
     const ch = CH_NAMES[chIdx].trim();
     if (e.detail.key === 'ENT') {
@@ -899,6 +984,7 @@ button.func {
       document.getElementById('pip-'+name).classList.add('on');
     });
     updateScnLed();
+    updatePriLed();
     const beep = new Audio('poweron_beep.mp3');
     beep.play();
     beep.onended = () => {
@@ -917,6 +1003,9 @@ button.func {
       if(pip) pip.classList.remove('on');
     });
     chanCells.forEach(cell=>{ cell.textContent='\u00a0'; });
+    scnLed.classList.remove('on', 'flashing');
+    prLed.classList.remove('on');
+    prIndicator.classList.remove('on'); 
     radioAudio.pause();                                                       
     radioAudio.currentTime = 0;   
   }
